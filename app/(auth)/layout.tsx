@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import ThemeToggle from "@/components/theme/ThemeToggle";
+import { IconThemeToggle } from "@/components/theme/ThemeToggle";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -15,7 +15,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       </Link>
       {/* Compact theme toggle */}
       <div className="fixed top-4 right-4 z-50">
-        <ThemeToggle />
+        <IconThemeToggle />
       </div>
       {children}
     </div>

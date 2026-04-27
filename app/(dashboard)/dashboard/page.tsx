@@ -2,8 +2,6 @@
 
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
-import { collection, query, where, getDocs } from "firebase/firestore";
-import { db } from "@/lib/firebase/client";
 import { Sparkles, FileText, TrendingUp, ArrowRight, BarChart3 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/Button";
@@ -32,14 +30,10 @@ export default function Dashboard() {
     async function fetchBlogs() {
       setBlogsLoading(true);
       try {
-        const q = query(
-          collection(db, "blogs"),
-          where("userId", "==", user!.uid)
-        );
-        const snap = await getDocs(q);
-        const data = snap.docs.map((d) => d.data() as Blog);
-        data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-        setBlogs(data);
+        const res = await fetch("/api/blogs");
+        if (!res.ok) return;
+        const data = await res.json();
+        setBlogs(data.blogs ?? []);
       } finally {
         setBlogsLoading(false);
       }

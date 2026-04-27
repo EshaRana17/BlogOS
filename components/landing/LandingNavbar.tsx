@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import BlogOSLogo from "@/components/logo/BlogOSLogo";
-import ThemeToggle from "@/components/theme/ThemeToggle";
+import { IconThemeToggle } from "@/components/theme/ThemeToggle";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -55,23 +55,19 @@ export default function LandingNavbar() {
         </nav>
 
         <div className="hidden md:flex items-center gap-2.5">
+          <IconThemeToggle />
+          <Link
+            href="/login"
+            className="text-sm font-medium px-3.5 py-2 rounded-lg border border-border bg-background hover:bg-muted transition-colors"
+          >
+            Sign In
+          </Link>
           <Link
             href="/signup"
             className="text-sm font-medium px-3.5 py-2 rounded-lg bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
           >
             Get Started
           </Link>
-          <div className="flex flex-col items-center gap-1">
-            <Link
-              href="/login"
-              className="text-sm font-medium px-3.5 py-2 rounded-lg border border-border bg-background hover:bg-muted transition-colors"
-            >
-              Sign In
-            </Link>
-            <div className="scale-75 origin-top -mt-1">
-              <ThemeToggle />
-            </div>
-          </div>
         </div>
 
         <button
@@ -97,15 +93,15 @@ export default function LandingNavbar() {
                 </a>
               )
             )}
-            <div className="flex gap-2 pt-2 border-t border-border">
+            <div className="flex items-center gap-2 pt-2 border-t border-border">
               <Link href="/signup" className="flex-1 text-sm font-medium text-center py-2 rounded-lg bg-primary text-primary-foreground">
                 Get Started
               </Link>
               <Link href="/login" className="flex-1 text-sm font-medium text-center py-2 rounded-lg border border-border">
                 Sign In
               </Link>
+              <IconThemeToggle />
             </div>
-            <ThemeToggle />
           </div>
         </div>
       )}

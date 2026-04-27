@@ -14,7 +14,7 @@ import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase/client";
 import { useAuth } from "@/hooks/useAuth";
 import BlogOSLogo from "@/components/logo/BlogOSLogo";
-import ThemeToggle from "@/components/theme/ThemeToggle";
+import { IconThemeToggle } from "@/components/theme/ThemeToggle";
 import { cn } from "@/lib/utils";
 
 const NAV = [
@@ -110,7 +110,7 @@ export default function DashboardSidebar() {
       {/* Bottom: theme toggle + user info + logout */}
       <div className="px-3 py-4 border-t border-border space-y-3">
         <div className="px-2">
-          <ThemeToggle />
+          <IconThemeToggle />
         </div>
 
         {user && (

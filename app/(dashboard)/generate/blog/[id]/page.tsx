@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase/client";
 import { useAuth } from "@/hooks/useAuth";
 import ReactMarkdown from "react-markdown";
 import Link from "next/link";
@@ -38,13 +36,14 @@ export default function BlogEditorPage() {
 
   useEffect(() => {
     if (!user || !id) return;
-    getDoc(doc(db, "blogs", id as string)).then((snap) => {
-      if (!snap.exists()) { router.push("/dashboard"); return; }
-      const data = { ...snap.data(), id: snap.id } as Blog;
-      if (data.userId !== user.uid) { router.push("/dashboard"); return; }
-      setBlog(data);
-      setLoading(false);
-    }).catch(() => { router.push("/dashboard"); });
+    fetch(`/api/blogs/${id}`)
+      .then(async (res) => {
+        if (!res.ok) { router.push("/dashboard"); return; }
+        const data = await res.json();
+        setBlog(data.blog as Blog);
+        setLoading(false);
+      })
+      .catch(() => router.push("/dashboard"));
   }, [user, id, router]);
 
   function getSections(): BlogSection[] {

@@ -76,12 +76,17 @@ export function detectTone(niche: string, topic: string): Tone {
  * ──────────────────────────────────────────────────────── */
 const TONE_DIRECTIVES: Record<Tone, string> = {
   spiritual: `TONE: Sacred / Religious.
-- Treat the subject with reverence. It is NOT a "product," "tool," "solution," "service," "offering," "utility," or "asset." Do not use business vocabulary.
-- Avoid: "leverage," "optimise," "deploy," "convert," "tactics," "funnel," "ROI," "hack," "boost performance."
-- Prefer: "recite," "reflect on," "learn about," "understand," "draw meaning from," "study," "observe," "practice."
+- Treat the subject with reverence. It is NOT a "product," "tool," "solution," "service," "offering," "utility," "system," "method," or "asset." NEVER describe it using these words.
+- HARD BAN on productivity/self-help framing: "powerful tool," "life-changing," "daily habit," "optimize your spiritual routine," "level up," "game changer for your faith," "transforms your mindset," "it's a practice that," "use it to." These frames are FORBIDDEN.
+- HARD BAN on business vocabulary: "leverage," "optimise," "deploy," "convert," "tactics," "funnel," "ROI," "hack," "boost performance," "strategy."
+- Prefer: "recite," "reflect on," "learn about," "understand," "draw meaning from," "study," "ponder," "observe," "practice," "memorise," "revere."
+- REQUIRED DOMAIN VOCABULARY — use at least 4–5 tradition-specific terms per section. These signal authentic knowledge:
+  • For Islamic content: ayat, tafsir, sunnah, sahaba (companions), hukm, scholars, narrations, Makki/Madani, hifz (memorisation), tilawah (recitation), mufassir, revelation, wahy, taqwa, iman, fiqh, ummah.
+  • For Christian content: scripture, exegesis, epistle, congregation, stewardship, parable, covenant, sermon, liturgy, congregation.
+  • For general religious content: use the tradition's own vocabulary — a practitioner should immediately recognise it as authentic.
 - Never fabricate religious claims, benefits, virtues (fadail), or historical events. If a specific claim is not common knowledge, write in general, observational language.
 - Never make medical, financial, or supernatural promises tied to the practice.
-- Region plays almost NO role. Do not attach the location to the sacred subject. A topic like "Surah Yaseen" is universal; location only matters if the user is asking about local mosques, prayer times, or community events.`,
+- Region plays ZERO role. Do not attach the location to any sacred subject. "Surah Baqarah" is universal — do NOT write "Surah Baqarah in Pakistan" or "for Muslims in [country]." Location ONLY appears if the topic is specifically about a local mosque, prayer times, or a community event.`,
 
   technical: `TONE: Technical / B2B SaaS.
 - Audience is engineers, architects, security leads, CTOs. Assume literacy — do not over-explain basics.
@@ -112,9 +117,11 @@ const TONE_DIRECTIVES: Record<Tone, string> = {
  * writing prompt in addition to tone-specific bans.
  * ──────────────────────────────────────────────────────── */
 const VOCAB_BLOCKLIST = [
+  // AI-writing tells
   "delve into", "delve", "delving",
   "dive into", "let's dive", "deep dive",
   "in today's digital landscape", "digital landscape",
+  "in today's world", "in today's fast-paced", "in today's competitive",
   "in the realm of", "realm of", "the world of",
   "navigate the", "navigating the complexities",
   "it's worth noting that", "it is important to note",
@@ -123,18 +130,37 @@ const VOCAB_BLOCKLIST = [
   "embark on", "embark on a journey",
   "unleash", "unlock the power of", "unlock the potential",
   "harness the power", "harness",
-  "in conclusion", "to sum up", "to summarize",
+  "in conclusion", "to sum up", "to summarize", "in summary", "in a nutshell",
   "furthermore", "moreover", "additionally", "thus",
   "plethora", "myriad", "countless",
   "cutting-edge", "state-of-the-art", "next-generation",
-  "revolutionary", "game-changing", "paradigm shift",
+  "revolutionary", "game-changing", "game changer", "paradigm shift",
   "seamless", "seamlessly", "robust", "holistic",
   "comprehensive solution", "end-to-end solution",
-  "in this article we will", "this article aims to",
+  "in this article we will", "this article aims to", "in this blog post", "in this article", "in this guide",
+  "let's explore", "let us explore", "as we explore",
   "hopefully this helps", "stay tuned",
   "ever-evolving", "rapidly evolving", "ever-changing",
   "at the end of the day", "when all is said and done",
   "it goes without saying",
+  // Generic filler openers
+  "look no further", "need look no further",
+  "are you looking to", "if you're looking to", "if you are looking to",
+  "you may be wondering", "you might be wondering",
+  "without further ado",
+  "did you know", "have you ever wondered",
+  "believe it or not", "it's no secret", "it is no secret",
+  "needless to say", "last but not least",
+  "as we all know", "as you may know",
+  "as mentioned earlier", "as mentioned above",
+  // Self-help / hype
+  "powerful tool", "powerful tools", "it's a powerful", "it is a powerful",
+  "life-changing", "life changing", "transform your life", "transforms your",
+  "game-changing habit", "to the next level", "level up",
+  "at your fingertips",
+  // AI sentence starters
+  "one thing is clear", "one thing is certain",
+  "the fact is", "the truth is", "the good news is",
 ];
 
 const VOCAB_RULE = `FORBIDDEN VOCABULARY (never use these phrases, even once):
@@ -153,12 +179,22 @@ const VARIABLE_WEIGHTING = (niche: string, topic: string, region: string, tone: 
         ? `Region is relevant only for compliance jurisdictions (GDPR, HIPAA, PIPEDA, APPI). Do not geo-tag concepts that are globally applicable.`
         : `Region is BACKGROUND CONTEXT only. It may shape spelling, currency, and examples, but must NOT exceed 5% of total word count. Do not force it into H2 headings. A blog that mentions the region once in the intro and once in the CTA is already sufficient.`;
 
+  const regionHardLimit = tone === "spiritual"
+    ? `REGION HARD LIMIT: 0 (zero) mentions of "${region}" allowed in this section. Count your uses before outputting — if you wrote it, delete it.`
+    : tone === "technical"
+      ? `REGION HARD LIMIT: 0 mentions of "${region}" allowed unless this specific section is about a compliance framework (GDPR, HIPAA, PIPEDA). Otherwise delete it.`
+      : tone === "local_service"
+        ? `REGION HARD LIMIT: Maximum 3 mentions of "${region}" per section. Do not start consecutive sentences with the location name.`
+        : `REGION HARD LIMIT: Maximum 1 mention of "${region}" per section. If you have used it once, do not use it again in this section. Scan your output and enforce this before returning.`;
+
   return `VARIABLE WEIGHTING (strict priority order):
 1. NICHE = "${niche}"   (highest weight — every section must reinforce the niche)
 2. TOPIC = "${topic}"   (high weight — every H2 must directly serve this topic)
 3. REGION = "${region}" (${regionRole})
 
-Region injection rule: NEVER append the region to every heading. NEVER start multiple sentences with "In ${region}...". Mention the region only where it is linguistically natural. If a sentence reads just as well without the region, remove it.`;
+Region injection rule: NEVER append the region to every heading. NEVER start multiple sentences with "In ${region}...". NEVER write "${region}" in a title, heading, or sentence where the topic stands perfectly without it. Mention the region only where it changes the meaning or adds a local fact that could not apply universally.
+
+${regionHardLimit}`;
 };
 
 /* ─── Helpers ────────────────────────────────────────────── */
@@ -263,13 +299,16 @@ export function writeSectionPrompt(
   semanticKeywords: string[],
   contentType: ContentType,
   region: string,
-  niche = ""
+  niche = "",
+  internalLinks: { anchor: string; url: string }[] = []
 ) {
   const tone = detectTone(niche, topic);
   const isFaq = section.sectionType === "faq";
   const isCta = section.sectionType === "cta";
 
-  const wordTarget = "EXACTLY 150 words — do NOT exceed 160 or go below 140";
+  const wordTarget = isFaq
+    ? "160–200 words — you have 6 questions each needing a real answer; do not truncate"
+    : "EXACTLY 150 words (140–160 range). Count your words before outputting. If short, add a specific detail — not filler. If over, cut the weakest sentence.";
 
   const allSecondary = secondaryKeywords.join(", ");
   const semanticSlice = semanticKeywords.slice(sectionIndex * 2, sectionIndex * 2 + 4).join(", ");
@@ -283,6 +322,10 @@ export function writeSectionPrompt(
 - Each question must be a phrase a real person would type — including "how," "why," "what is," "can I," "is it safe to," "how often."
 - No question may be answered with a yes/no that doesn't elaborate.`;
 
+  const internalLinkBlock = internalLinks.length > 0 && (section.sectionType === "conclusion" || section.sectionType === "body")
+    ? `\nINTERNAL LINKS — naturally embed 1–2 of these as markdown hyperlinks within the prose (NOT as a bullet list at the end):\n${internalLinks.map(l => `- [${l.anchor}](${l.url})`).join("\n")}\nOnly link where contextually relevant. Do not force them.`
+    : "";
+
   return {
     system: `You are an expert long-form writer. You produce human-sounding, authoritative blog content that ranks on Google and reads like it was written by a practitioner — not an AI.
 
@@ -293,8 +336,10 @@ BASE RULES (apply always):
 - First person ("I"), not corporate "we."
 - Sound like someone who has personally done / studied / observed the topic.
 - Follow Google E-E-A-T — experience, expertise, authority, trust.
+- Use domain-specific vocabulary — name things precisely the way an expert in "${niche}" would. Minimum 3–5 field-specific terms per section. Generic language ("this concept," "this practice," "this topic") signals low expertise.
 - Do NOT use em dashes or hyphenated parentheticals for rhythm.
 - Do NOT use rhetorical questions to open paragraphs.
+- Do NOT start the first sentence with "I" or with the topic name.
 - Output RAW markdown only. No "Here is the section," no meta-commentary.
 
 ${VOCAB_RULE}`,
@@ -322,6 +367,7 @@ ${
       ? `Write a genuine, human call-to-action — ${tone === "spiritual" ? "invite the reader to continue their study or practice. Do not sell anything." : tone === "local_service" ? `invite the reader to call / book a quote. Reference "${region}" once in the CTA.` : `invite the reader to take the specific next step (subscribe, get a quote, book a demo, read the related guide). Reference the region only if natural.`}`
       : `Write flowing paragraphs. Add a single ### subheading only if the section truly needs it. Every sentence must earn its place — no padding.`
 }
+${internalLinkBlock}
 
 Begin your response with exactly "## ${section.h2}" — nothing before it, no preamble.`,
   };
@@ -536,6 +582,14 @@ Hard requirements:
 - Permalinks lowercase, hyphen-separated, no stopwords.
 - Distribute funnel stages roughly 40% TOFU / 35% MOFU / 25% BOFU.
 - Titles must read like editorial SERP-ranking pieces, not keyword lists.
+- REGION IN TITLES — strictly enforce ${localRule}
+  ⛔ For spiritual/technical niches: if ANY title contains "${region}", it FAILS. Remove it.
+  ⛔ For commercial/lifestyle niches: scan every title — if more than 2 titles contain "${region}", remove it from the extras until only 2 remain.
+  ⛔ NEVER append "${region}" to a title just to make it look local. Only include it if the article is genuinely about a local angle (event, regulation, geographic feature).
+- TITLE QUALITY — REJECT these patterns:
+  ✗ "[Topic] in ${region}" (lazy geo-tag)
+  ✗ "Best [Topic] for [Region] Readers" (pointless qualifier)
+  ✓ Titles name a specific angle, question, contrast, or process that is searchable on its own.
 - Return raw JSON only.`,
   };
 }
@@ -635,9 +689,17 @@ ${
 
 Strict requirements:
 - EXACTLY 10 sections: 1 intro + 6 body + 1 conclusion + 1 cta + 1 faq.
-- H2s must be editorially compelling, not keyword-list headers.
-- Intent line (one sentence per section) must state the ANGLE, not just restate the heading.
-- FAQ section: the intent must pre-seed 6 real user questions specific to "${topic}" (not generic).
+- H2s must be editorially compelling, not keyword-list headers. Show logical progression.
+- HEADING QUALITY BAR — these patterns FAIL:
+  ✗ "[Topic] in [Region]" (geo-stuffing)
+  ✗ "What Is [Topic] and Why It Matters" (too generic)
+  ✗ "Everything You Need to Know About [Topic]" (too generic)
+  ✓ Name a specific angle, contrast, process step, or fact that stands alone as a useful sub-topic.
+- Intent line: state the ANGLE, not a restatement of the heading.
+- FAQ h2 MUST be topic-specific — NEVER use the phrase "Frequently Asked Questions."
+  ✓ Example: "Your Questions About ${topic} Answered"
+- FAQ intent must list exactly 6 real questions a ${topic} reader would search for.
+  Format: "Q1: [question] | Q2: [question] | Q3: [question] | Q4: [question] | Q5: [question] | Q6: [question]"
 
 Return a JSON object with EXACTLY this structure:
 {
@@ -651,7 +713,7 @@ Return a JSON object with EXACTLY this structure:
     {"sectionType": "body", "h2": "heading", "intent": "..."},
     {"sectionType": "conclusion", "h2": "heading", "intent": "..."},
     {"sectionType": "cta", "h2": "heading", "intent": "..."},
-    {"sectionType": "faq", "h2": "Frequently Asked Questions", "intent": "6 questions grounded in ${topic}"}
+    {"sectionType": "faq", "h2": "[TOPIC-SPECIFIC HEADING — not 'Frequently Asked Questions']", "intent": "Q1: ... | Q2: ... | Q3: ... | Q4: ... | Q5: ... | Q6: ..."}
   ]
 }`,
   };

@@ -148,7 +148,7 @@ function GlobalBackground() {
           mix-blend-mode: screen;
           will-change: transform;
         }
-        :global(.dark) .aurora-blob { opacity: 0.4; mix-blend-mode: lighten; }
+        :global(.dark) .aurora-blob { opacity: 0; }
         .aurora-1 {
           width: 55vw; height: 55vw; left: -10vw; top: -10vw;
           background: radial-gradient(circle, hsl(217 91% 60% / 0.7), transparent 70%);
@@ -228,9 +228,9 @@ function MouseSpotlight() {
   return (
     <motion.div
       style={{ left: sx, top: sy, translateX: "-50%", translateY: "-50%" }}
-      className="fixed w-[500px] h-[500px] rounded-full pointer-events-none z-[5] hidden md:block"
+      className="fixed w-[250px] h-[250px] rounded-full pointer-events-none z-[5] hidden md:block"
     >
-      <div className="w-full h-full rounded-full bg-[radial-gradient(circle,hsl(217_91%_60%/0.08),transparent_70%)] dark:bg-[radial-gradient(circle,hsl(217_91%_60%/0.12),transparent_70%)]" />
+      <div className="w-full h-full rounded-full bg-[radial-gradient(circle,hsl(217_91%_60%/0.18),transparent_70%)] dark:bg-[radial-gradient(circle,hsl(217_91%_60%/0.28),transparent_70%)]" />
     </motion.div>
   );
 }
@@ -475,12 +475,10 @@ function FloatingWhatsApp() {
       transition={{ delay: 1.5, type: "spring", stiffness: 200 }}
       whileHover={{ scale: 1.1 }}
       whileTap={{ scale: 0.92 }}
-      className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 pl-3 pr-4 py-2.5 rounded-2xl bg-[#25D366] hover:bg-[#20c35e] shadow-2xl shadow-green-500/30 transition-colors group"
+      className="fixed bottom-6 right-6 z-50 flex items-center justify-center w-12 h-12 rounded-full bg-[#25D366] hover:bg-[#20c35e] shadow-lg shadow-green-500/30 transition-colors"
       aria-label="Chat on WhatsApp"
     >
-      <span className="absolute inset-0 rounded-2xl bg-[#25D366] animate-ping opacity-20" />
-      <WhatsAppIcon size={22} className="text-white relative z-10 shrink-0" />
-      <span className="text-white text-sm font-semibold relative z-10 hidden sm:block">Chat with us</span>
+      <WhatsAppIcon size={22} className="text-white" />
     </motion.a>
   );
 }

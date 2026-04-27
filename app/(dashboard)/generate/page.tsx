@@ -2,8 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { doc, setDoc, updateDoc, serverTimestamp, increment } from "firebase/firestore";
-import { db } from "@/lib/firebase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { TopicForm } from "@/components/generate/TopicForm";
 import { ProgressTracker } from "@/components/generate/ProgressTracker";
@@ -119,7 +117,7 @@ export default function GeneratePage() {
       const { sections }: { sections: BlogSection[] } = await structRes.json();
       setSteps((s) => setStep(s, "structure", "done", `${sections.length} sections planned`));
 
-      // Step 4: Save to Firestore
+      // Step 4: Save via server-side API (uses admin SDK, bypasses Firestore rules)
       setSteps((s) => setStep(s, "save", "running"));
       const blogId = `${user.uid}_${Date.now()}`;
       const now = new Date().toISOString();
@@ -131,43 +129,38 @@ export default function GeneratePage() {
         topic,
         region,
         contentType,
-
         primaryKeyword: keywords.primaryKeyword,
         secondaryKeywords: keywords.secondaryKeywords,
         semanticKeywords: keywords.semanticKeywords,
-
         seoTitle: keywords.seoTitle,
         metaDescription: keywords.metaDescription,
         permalink: keywords.permalink,
-
         content: JSON.stringify(sections),
         wordCount: 0,
         aiScore: 0,
         schema: "",
-
         featuredImageUrl: "",
         featuredImagePrompt: "",
         externalLink: "",
         scrapedUrls: pages.map((p) => p.url),
-
         status: "draft",
         createdAt: now,
         updatedAt: now,
       };
 
-      await setDoc(doc(db, "blogs", blogId), {
-        ...blogDoc,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
+      const saveRes = await fetch("/api/blogs/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...blogDoc, blogId }),
       });
-
-      await updateDoc(doc(db, "users", user.uid), {
-        blogsUsed: increment(1),
-      });
+      if (!saveRes.ok) {
+        const err = await saveRes.json().catch(() => ({}));
+        throw new Error(err.error ?? "Failed to save research data");
+      }
 
       setSteps((s) => setStep(s, "save", "done", "Research saved"));
 
-      router.push(`/blog/${blogId}`);
+      router.push(`/generate/blog/${blogId}`);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Pipeline failed";
       setError(msg);

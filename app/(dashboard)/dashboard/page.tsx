@@ -7,7 +7,6 @@ import { db } from "@/lib/firebase/client";
 import { Sparkles, FileText, TrendingUp, ArrowRight, BarChart3 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/Button";
-import CompactThemeToggle from "@/components/theme/CompactThemeToggle";
 import WelcomeTrialModal from "@/components/dashboard/WelcomeTrialModal";
 import type { Blog } from "@/types";
 
@@ -67,12 +66,9 @@ export default function Dashboard() {
           </h1>
           <p className="text-muted-foreground mt-1">Ready to write content that ranks?</p>
         </div>
-        <div className="flex items-center gap-2">
-          <CompactThemeToggle />
-          <span className={`text-xs px-3 py-1.5 rounded-full font-semibold ${PLAN_BADGE[user.plan]}`}>
-            {PLAN_LABELS[user.plan]}
-          </span>
-        </div>
+        <span className={`text-xs px-3 py-1.5 rounded-full font-semibold ${PLAN_BADGE[user.plan]}`}>
+          {PLAN_LABELS[user.plan]}
+        </span>
       </div>
 
       {/* Trial congratulations banner — persists while trial is active */}
@@ -217,7 +213,7 @@ export default function Dashboard() {
               return (
                 <Link
                   key={blog.id}
-                  href={`/blog/${blog.id}`}
+                  href={`/generate/blog/${blog.id}`}
                   className="flex items-center gap-4 bg-card border border-border rounded-xl p-4 hover:border-primary/40 transition-colors group"
                 >
                   <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">

@@ -11,6 +11,34 @@ const STARS = [
   { left: "63%", top: "76%", size: 1.4 },
 ];
 
+export function IconThemeToggle() {
+  const { resolvedTheme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+  if (!mounted) return <div className="w-9 h-9 rounded-full bg-muted animate-pulse" />;
+  const isDark = resolvedTheme === "dark";
+  return (
+    <motion.button
+      onClick={() => setTheme(isDark ? "light" : "dark")}
+      aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
+      whileTap={{ scale: 0.9 }}
+      className="w-9 h-9 rounded-full flex items-center justify-center border border-border bg-background hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+    >
+      <AnimatePresence mode="wait">
+        {isDark ? (
+          <motion.div key="moon" initial={{ opacity: 0, rotate: -20 }} animate={{ opacity: 1, rotate: 0 }} exit={{ opacity: 0, rotate: 20 }} transition={{ duration: 0.18 }}>
+            <Moon size={15} className="text-blue-300" strokeWidth={1.5} />
+          </motion.div>
+        ) : (
+          <motion.div key="sun" initial={{ opacity: 0, rotate: 20 }} animate={{ opacity: 1, rotate: 0 }} exit={{ opacity: 0, rotate: -20 }} transition={{ duration: 0.18 }}>
+            <Sun size={15} className="text-amber-500" strokeWidth={1.5} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.button>
+  );
+}
+
 export default function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);

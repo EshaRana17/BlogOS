@@ -151,34 +151,7 @@ export async function POST(req: NextRequest) {
       structRes.choices[0]?.message?.content ?? "{}"
     );
 
-    /* 4. Write all 10 sections (non-streaming — batch-mode) */
-    const sectionContents: string[] = [];
-    for (let i = 0; i < sections.length; i++) {
-      const wp = writeSectionPrompt(
-        sections[i],
-        i,
-        sections.length,
-        entry.title,
-        keywords.primaryKeyword,
-        keywords.secondaryKeywords,
-        keywords.semanticKeywords,
-        cluster.contentType,
-        cluster.region,
-        cluster.niche
-      );
-      const res = await groq.chat.completions.create({
-        model: "llama-3.3-70b-versatile",
-        messages: [{ role: "system", content: wp.system }, { role: "user", content: wp.user }],
-        temperature: 0.6,
-        max_tokens: 300,
-      });
-      sectionContents.push(res.choices[0]?.message?.content?.trim() ?? "");
-    }
-
-    const fullContent = sectionContents.join("\n\n");
-    const wordCount = fullContent.split(/\s+/).filter(Boolean).length;
-
-    /* 5. Resolve internal links — any slug that exists in the cluster becomes a live URL */
+    /* 4. Pre-resolve internal links so writers can embed them in prose */
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
     const internalLinks = (entry.internalLinks ?? "")
       .split(",")
@@ -192,6 +165,38 @@ export async function POST(req: NextRequest) {
           url: `${appUrl}/blog/${slug}`,
         };
       });
+
+    /* 5. Write all 10 sections (non-streaming — batch-mode) */
+    const sectionContents: string[] = [];
+    for (let i = 0; i < sections.length; i++) {
+      const sec = sections[i];
+      const linksForSection = (sec.sectionType === "conclusion" || sec.sectionType === "body")
+        ? internalLinks
+        : [];
+      const wp = writeSectionPrompt(
+        sec,
+        i,
+        sections.length,
+        entry.title,
+        keywords.primaryKeyword,
+        keywords.secondaryKeywords,
+        keywords.semanticKeywords,
+        cluster.contentType,
+        cluster.region,
+        cluster.niche,
+        linksForSection
+      );
+      const res = await groq.chat.completions.create({
+        model: "llama-3.3-70b-versatile",
+        messages: [{ role: "system", content: wp.system }, { role: "user", content: wp.user }],
+        temperature: 0.6,
+        max_tokens: 600,
+      });
+      sectionContents.push(res.choices[0]?.message?.content?.trim() ?? "");
+    }
+
+    const fullContent = sectionContents.join("\n\n");
+    const wordCount = fullContent.split(/\s+/).filter(Boolean).length;
 
     /* 6. SEO Score + Schema (parallel) */
     const [scoreRes, schemaRes] = await Promise.all([

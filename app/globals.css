@@ -1,0 +1,136 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* ── Light Theme (default) ─────────────────────────────── */
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222 47% 5%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 5%;
+
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+
+    --primary: 221 83% 53%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
+
+    --accent: 187 96% 43%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --radius: 0.5rem;
+  }
+
+  /* ── Dark Theme ────────────────────────────────────────── */
+  .dark {
+    --background: 222 47% 5%;
+    --foreground: 210 40% 98%;
+
+    --card: 222 47% 7%;
+    --card-foreground: 210 40% 98%;
+
+    --muted: 217 33% 12%;
+    --muted-foreground: 215 20% 65%;
+
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+
+    --primary: 221 83% 53%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 217 33% 12%;
+    --secondary-foreground: 210 40% 98%;
+
+    --accent: 187 96% 43%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 63% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --radius: 0.5rem;
+  }
+
+  /* ── Base resets ───────────────────────────────────────── */
+  * {
+    @apply border-border;
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-syne), sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.3s ease, color 0.2s ease;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-syne), sans-serif;
+  }
+}
+
+@layer utilities {
+  /* Gradient text utility used by logo and headings */
+  .gradient-text {
+    background: linear-gradient(135deg, #2563eb, #06b6d4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Subtle glow for the "OS" gradient text */
+  .gradient-glow {
+    filter: drop-shadow(0 0 20px rgba(6, 182, 212, 0.3));
+  }
+
+  /* Glass card effect */
+  .glass {
+    @apply bg-card/80 backdrop-blur-sm border border-border/50;
+  }
+
+  /* Landing-page hero fade-up for rotating quote */
+  .animate-fade-up {
+    animation: fade-up 0.5s ease-out;
+  }
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Horizontal marquee (no-JS auto-scroll) */
+  .marquee {
+    display: flex;
+    width: max-content;
+    animation: marquee var(--duration, 40s) linear infinite;
+  }
+  .marquee-pause:hover .marquee {
+    animation-play-state: paused;
+  }
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  /* Mesh gradient background (much lighter than blurred blobs) */
+  .hero-mesh {
+    background:
+      radial-gradient(60% 50% at 20% 10%, hsl(221 83% 53% / 0.18), transparent 70%),
+      radial-gradient(50% 45% at 85% 0%,  hsl(280 85% 65% / 0.15), transparent 70%),
+      radial-gradient(45% 45% at 50% 100%, hsl(187 96% 43% / 0.14), transparent 75%);
+  }
+}

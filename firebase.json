@@ -1,0 +1,16 @@
+{
+  "apphosting": {
+    "backendId": "blogos",
+    "rootDir": "/",
+    "ignore": [
+      "node_modules",
+      ".git",
+      "firebase-debug.log",
+      "firebase-debug.*.log",
+      "functions",
+      ".next",
+      ".env*",
+      "7-DAY-SPRINT.md"
+    ]
+  }
+}
